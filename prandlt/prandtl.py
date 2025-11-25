@@ -137,7 +137,7 @@ U_fig.savefig("sens_U.png", bbox_inches='tight', dpi=300)
 plt.figure(4)
 alphas = [0.1, 10, 30, 45, 60, 75, 90]
 for i, angle in enumerate(alphas):
-    plt.plot(u_sens(n, par[0], angle, gamma, par[1]), n, label=str(angle)+" deg")
+    plt.plot(u_sens(n, par[0], angle, gamma, par[1]), n, label=str(angle)+r" deg, $\delta$ "+str(round(delta_sens(angle, gamma, par[1]), 1)))
 
 plt.legend()
 plt.xlabel('u [m/s]')
@@ -148,8 +148,9 @@ plt.savefig("sens_U_slope.png", bbox_inches='tight', dpi=300)
 #####################################
 plt.figure(5)
 gammas = np.linspace(0.003, 0.01, 7)
+n_2 = np.linspace(0,500, 500)
 for i, gamma in enumerate(gammas):
-    plt.plot(u_sens(n, par[0], angle, gamma, par[1]), n, label=str(gamma)+" K/m")
+    plt.plot(u_sens(n_2, par[0], alpha, gamma, par[1]), n_2, label=str(round(gamma,3))+r" K/m, $\delta$ "+str(round(delta_sens(alpha, gamma, par[1]), 1)))
 
 plt.legend()
 plt.xlabel('u [m/s]')
@@ -160,8 +161,9 @@ plt.savefig("sens_U_gamma.png", bbox_inches='tight', dpi=300)
 #####################################
 plt.figure(6)
 thetas = np.linspace(0, 10, 7)
-for i, theta in enumerate(thetas):
-    plt.plot(u_sens(n, par[0], angle, gamma, theta), n, label=str(theta)+" K")
+n_2 = np.linspace(0,500, 500)
+for i, thetai in enumerate(thetas):
+    plt.plot(u_sens(n_2, thetai, alpha, gamma, par[1]), n_2, label=str(round(thetai, 2))+r" K, $\delta$ "+str(round(delta_sens(alpha, gamma, par[1]), 1)))
 
 plt.legend()
 plt.xlabel('u [m/s]')
