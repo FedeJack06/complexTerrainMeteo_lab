@@ -145,6 +145,30 @@ plt.ylabel('n [m]')
 plt.title('')
 plt.savefig("sens_U_slope.png", bbox_inches='tight', dpi=300)
 
+#####################################
+plt.figure(5)
+gammas = np.linspace(0.003, 0.01, 7)
+for i, gamma in enumerate(gammas):
+    plt.plot(u_sens(n, par[0], angle, gamma, par[1]), n, label=str(gamma)+" K/m")
+
+plt.legend()
+plt.xlabel('u [m/s]')
+plt.ylabel('n [m]')
+plt.title('')
+plt.savefig("sens_U_gamma.png", bbox_inches='tight', dpi=300)
+
+#####################################
+plt.figure(6)
+thetas = np.linspace(0, 10, 7)
+for i, theta in enumerate(thetas):
+    plt.plot(u_sens(n, par[0], angle, gamma, theta), n, label=str(theta)+" K")
+
+plt.legend()
+plt.xlabel('u [m/s]')
+plt.ylabel('n [m]')
+plt.title('')
+plt.savefig("sens_U_theta.png", bbox_inches='tight', dpi=300)
+
 plt.tight_layout()
 plt.show()
 
