@@ -1,0 +1,6 @@
+modify config file and run main.py
+
+or
+
+install python lib ProMeteo and run in other enviroment
+python3 -m pip install -e ./proMeteo

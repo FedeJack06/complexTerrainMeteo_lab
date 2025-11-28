@@ -1,0 +1,143 @@
+2025-11-27 14:18:25,512 - INFO - 
+            ProMeteo
+            
+2025-11-27 14:18:25,855 - INFO - 
+            Raw Data imported from: /home/federico/unibo/complTerrMet/sonic_data/ES3_10_02_2012_cut/ES3_sonic_2_2012-10-02.csv
+            Anemometer model: CAMPBELL_CSAT3
+            Selected sampling frequency: 20.0
+            
+2025-11-27 14:18:25,896 - INFO - 
+            Missing timestamps filling completed:
+            Number of timestamps in the rawdata package: 287701
+            Number of timestamps after the filling procedure: 288001
+            
+2025-11-27 14:18:25,911 - INFO - 
+                16 points beyond 30.0 replaced with NaNs from 'u' time series
+                
+2025-11-27 14:18:25,914 - INFO - 
+                16 points beyond 30.0 replaced with NaNs from 'v' time series
+                
+2025-11-27 14:18:25,916 - INFO - 
+                16 points beyond 5.0 replaced with NaNs from 'w' time series
+                
+2025-11-27 14:18:25,922 - INFO - 
+                16 points beyond 30.0 replaced with NaNs from 'T_s' time series
+                
+2025-11-27 14:18:25,922 - INFO - 
+            Despiking
+            
+2025-11-27 14:18:25,937 - INFO - 
+                - Mode: VM97
+                - Moving window length: 5.0 min => 6001 points
+                - Maximum number of consecutive values to be considered spike: 3
+                - Maximum number of iterations to perform: 4
+                - Starting values of c:
+                    - For the horizontal components of the wind: 3.5
+                    - For the vertical component: 5.0
+                    - For the sonic temperature: 3.5
+                
+2025-11-27 14:18:25,937 - INFO - 
+                Despiking of 'u' time series
+                
+2025-11-27 14:18:54,740 - INFO - 
+                Iteration: 0, identified and removed spikes: 59
+            
+2025-11-27 14:19:21,821 - INFO - 
+                Iteration: 1, identified and removed spikes: 4
+            
+2025-11-27 14:19:49,425 - INFO - 
+                Iteration: 2, identified and removed spikes: 6
+            
+2025-11-27 14:20:15,878 - INFO - 
+                Iteration: 3, identified and removed spikes: 6
+            
+2025-11-27 14:20:15,890 - INFO - 
+                Number of modified values: 119 
+                    
+2025-11-27 14:20:15,890 - INFO - 
+                Despiking of 'v' time series
+                
+2025-11-27 14:20:47,280 - INFO - 
+                Iteration: 0, identified and removed spikes: 93
+            
+2025-11-27 14:21:15,659 - INFO - 
+                Iteration: 1, identified and removed spikes: 3
+            
+2025-11-27 14:21:50,236 - INFO - 
+                Iteration: 2, identified and removed spikes: 1
+            
+2025-11-27 14:22:25,991 - INFO - 
+                Iteration: 3, identified and removed spikes: 8
+            
+2025-11-27 14:22:25,993 - INFO - 
+                Number of modified values: 150 
+                    
+2025-11-27 14:22:25,993 - INFO - 
+                Despiking of 'w' time series
+                
+2025-11-27 14:22:55,841 - INFO - 
+                Iteration: 0, identified and removed spikes: 36
+            
+2025-11-27 14:23:25,125 - INFO - 
+                Iteration: 1, identified and removed spikes: 3
+            
+2025-11-27 14:23:51,167 - INFO - 
+                Iteration: 2, identified and removed spikes: 1
+            
+2025-11-27 14:24:19,477 - INFO - 
+                Iteration: 3, identified and removed spikes: 0
+            
+2025-11-27 14:24:19,479 - INFO - 
+                Number of modified values: 53 
+                    
+2025-11-27 14:24:19,479 - INFO - 
+                Despiking of 'T_s' time series
+                
+2025-11-27 14:24:47,926 - INFO - 
+                Iteration: 0, identified and removed spikes: 122
+            
+2025-11-27 14:25:16,866 - INFO - 
+                Iteration: 1, identified and removed spikes: 18
+            
+2025-11-27 14:25:49,849 - INFO - 
+                Iteration: 2, identified and removed spikes: 14
+            
+2025-11-27 14:26:15,610 - INFO - 
+                Iteration: 3, identified and removed spikes: 13
+            
+2025-11-27 14:26:15,614 - INFO - 
+                Number of modified values: 268 
+                    
+2025-11-27 14:26:15,670 - INFO - 
+                NaNs interpolation of 'u' time series:
+                - Number of interpolated NaNs: 339
+                - Number of remaining NaNs: 0
+                
+2025-11-27 14:26:15,714 - INFO - 
+                NaNs interpolation of 'v' time series:
+                - Number of interpolated NaNs: 339
+                - Number of remaining NaNs: 0
+                
+2025-11-27 14:26:15,758 - INFO - 
+                NaNs interpolation of 'w' time series:
+                - Number of interpolated NaNs: 339
+                - Number of remaining NaNs: 0
+                
+2025-11-27 14:26:15,804 - INFO - 
+                NaNs interpolation of 'T_s' time series:
+                - Number of interpolated NaNs: 339
+                - Number of remaining NaNs: 0
+                
+2025-11-27 14:26:18,041 - INFO - 
+            Pre-processed data saved.
+            
+2025-11-27 14:26:18,041 - INFO - 
+            Rotation to streamline reference frame
+            and Wind Direction computation.
+            - Moving window length: 30.0 min => 36001 points
+            - Azimuth: 246.0
+            - Horizontal wind speed threshold for wind direction computation: 0.01
+            
+2025-11-27 14:29:38,779 - INFO - 
+            Rotated wind components saved.
+            

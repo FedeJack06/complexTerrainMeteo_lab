@@ -1,0 +1,14 @@
+LICENSE
+README.md
+setup.py
+src/core.py
+src/frame.py
+src/pre_processing.py
+src/ProMeteo.egg-info/PKG-INFO
+src/ProMeteo.egg-info/SOURCES.txt
+src/ProMeteo.egg-info/dependency_links.txt
+src/ProMeteo.egg-info/requires.txt
+src/ProMeteo.egg-info/top_level.txt
+tests/test_core.py
+tests/test_frame.py
+tests/test_pre_processing.py
