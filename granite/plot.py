@@ -24,9 +24,9 @@ for file in files:
     df = df.astype(dictionary)
 
     #print(df)
-    df.insert(0,'date',df.iloc[:,0]+'_'+df.iloc[:,1]+'_'+df.iloc[:,2])    
+    df.insert(0,'date','2012_'+df.iloc[:,0]+'_'+df.iloc[:,1]+'_'+df.iloc[:,2])    
 
-    df['date'] = pd.to_datetime(df['date'], format='%j_%H_%M', errors='coerce')
+    df['date'] = pd.to_datetime(df['date'], format='%Y_%j_%H_%M', errors='coerce')
 
     df = df.dropna(subset=['date'])
 
@@ -41,11 +41,25 @@ all = pd.concat(h, axis=1)
 
 n = [0.5, 2, 5, 10, 20] #asse y plot in cui abbiamo le varie quote
 
+#decido di prendere in considerazione solo i venti compresi tra SW 235 e NW 315
+# perchè i downslope sono circa a W
+
+wdir = all[(all['truewdir_sn1']>260)&(all['truewdir_sn1']<280)].copy()  #direzioni di interesse
+#print(wdir)
 
 plt.figure(1)
-plt.plot([all['wsp_sn1'].iloc[0], all['wsp_sn2'].iloc[0], all['wsp_sn3'].iloc[0], all['wsp_sn4'].iloc[0], all['wsp_sn5'].iloc[0]], n)
-plt.show()
+for i in range(len(wdir)):
+    plt.plot([wdir['wsp_sn1'].iloc[i], wdir['wsp_sn2'].iloc[i], wdir['wsp_sn3'].iloc[i], wdir['wsp_sn4'].iloc[i], wdir['wsp_sn5'].iloc[i]], n)
+#plt.show()
 
+plt.figure(2)
+for i in range(5): 
+    #print(i)
+    #print(all['date'])
+    plt.plot(all.date, all[f'truewdir_sn{i+1}'], label=str(i+1))
+    print(all[f'truewdir_sn{i+1}'])
+plt.legend()
+plt.show()
 
 
 
