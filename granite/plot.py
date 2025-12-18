@@ -1,7 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
-from windrose import WindroseAxes
 import matplotlib.patches as mpatches
 import os
 
