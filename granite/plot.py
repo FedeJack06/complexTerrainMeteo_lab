@@ -30,14 +30,40 @@ for file in files:
 
     df = df.dropna(subset=['date'])
 
+    df = df.sort_values(by='date', ignore_index=True)
+
     df.set_index(df['date'], inplace=True)
 
     h.append(df)
     #print(df)
     #print(df.index[df.index.duplicated(keep=False)])
 
-all = pd.concat(h, axis=1)
+all = pd.concat(h, axis=1) #one df with columns' names: *_sn1, *_sn2, *_sn3, *_sn4, *_sn5
 #print(all)
+
+################################ find nan
+df = all
+righe_con_nan = df.isna().any(axis=1)
+colonne_con_nan = df.isna().any(axis=0)
+risultato = df.loc[righe_con_nan, colonne_con_nan]
+print(risultato)
+
+dt = pd.Timedelta('5m')
+time_diff = risultato.index.to_series().diff()
+is_new_block = time_diff != dt
+block_id = is_new_block.cumsum()
+intervalli_nan = df.groupby(block_id).apply(
+    lambda x: pd.Series({
+        'Inizio': x.index[0],
+        'Fine': x.index[-1],
+        'Numero_Campioni': len(x),
+    })
+)
+
+print(intervalli_nan)
+
+
+################################################## PLOT
 
 n = [0.5, 2, 5, 10, 20] #asse y plot in cui abbiamo le varie quote
 
@@ -57,8 +83,12 @@ for i in range(5):
     #print(i)
     #print(all['date'])
     plt.plot(all.date, all[f'truewdir_sn{i+1}'], label=str(i+1))
-    print(all[f'truewdir_sn{i+1}'])
+    #print(all[f'truewdir_sn{i+1}'])
 plt.legend()
+
+plt.figure(3)
+
+
 plt.show()
 
 
