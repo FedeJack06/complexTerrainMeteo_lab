@@ -37,9 +37,11 @@ for file in files:
     h.append(df)
     #print(df)
     #print(df.index[df.index.duplicated(keep=False)])
-
-all = pd.concat(h, axis=1) #one df with columns' names: *_sn1, *_sn2, *_sn3, *_sn4, *_sn5
+all = pd.concat(h, axis=1).sort_index() #one df with columns' names: *_sn1, *_sn2, *_sn3, *_sn4, *_sn5
 #print(all)
+#print(all.columns)
+print("max timestamp",all.date.max())
+print("min timestamp",all.date.min())
 
 ################################ find nan
 df = all
@@ -59,9 +61,7 @@ intervalli_nan = df.groupby(block_id).apply(
         'Numero_Campioni': len(x),
     })
 )
-
 print(intervalli_nan)
-
 
 ################################################## PLOT
 
@@ -89,7 +89,7 @@ plt.legend()
 plt.figure(3)
 
 
-plt.show()
+#plt.show()
 
 
 
