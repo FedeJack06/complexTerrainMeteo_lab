@@ -98,8 +98,8 @@ for day in unique_days:
         'sunrise_local': sunrise_local,
         'sunset_local': sunset_local
     })
-#for item in sun_schedule:
-    #print(f"Giorno: {item['date']} | Sunrise: {item['sunrise_utc']} | Sunset: {item['sunset_utc']}")
+for item in sun_schedule:
+    print(f"Giorno: {item['date']} | Sunrise: {item['sunrise_utc']} | Sunset: {item['sunset_utc']}")
 
 ################################################## PLOT
 
@@ -145,22 +145,23 @@ plt.legend(loc='upper right')
 plt.title("True wind direction over time for vertical levels")
 plt.xlabel("Date")
 plt.ylabel("Wind dir [$^\circ$]")
+plt.tight_layout()
 plt.savefig("winddir_time.png", bbox_inches='tight', dpi=300)
 
 ############################################# select downslope regime
 number_of_day = 0 # 3^ giorno su 5
 sunset = sun_schedule[number_of_day]['sunset_utc']
 sunrise = sun_schedule[number_of_day]['sunrise_utc']
-print("Sunset UTC", sunset)
-print("Sunrise UTC", sunrise)
+#print("Sunset UTC", sunset)
+#print("Sunrise UTC", sunrise)
 
 nighttime_hour = (sunrise - sunset).total_seconds() / 3600
-print("nighttime (h)", nighttime_hour)
+#print("nighttime (h)", nighttime_hour)
 hours_start = 10
 time_start = sunset + datetime.timedelta(hours=hours_start)
 hours_end = 12
 time_end = sunset + datetime.timedelta(hours=hours_end)
-print("selected hours (h)", (time_end-time_start).total_seconds() / 3600)
+#print("selected hours (h)", (time_end-time_start).total_seconds() / 3600)
 
 wdir = all[ (all.index > time_start) & (all.index < time_end) ].copy()  #direzioni di interesse
 n_lines = len(wdir)
@@ -181,7 +182,101 @@ cbar = plt.colorbar(sm, ax=ax, label='Time since Sunset [h]')
 plt.title(f"Vertical wind speed profile from SS + {hours_start}h to SS + {hours_end}h")
 plt.xlabel("U [m/s]")
 plt.ylabel("n [m]")
+plt.tight_layout()
 plt.savefig(f"downU_{number_of_day}d_{hours_start}h_{hours_end}h.png", bbox_inches='tight', dpi=300)
+
+
+############################################# box U(n)
+dataset = [] # [ [0.5 2 5 10 20], [day 2], ...  ] divided by night
+for item in sun_schedule:
+    list = [] #all levels in one night
+    for i in range(5):
+        list.append( all[f'wsp_sn{i+1}'][ (all.index > item['sunset_utc']) & (all.index < item['sunrise_utc']) ])
+    dataset.append(list)
+
+all_u_night = [] #[0.5 2 5 10 20] for all night
+for i in range(5):
+    level_list = [] #all night, one level
+    for n_night in range(len(dataset)):
+        level_list.append(dataset[n_night][i])
+    all_u_night.append( pd.concat(level_list, axis=0).sort_index() )#df all night, one level
+dataset.append(all_u_night)
+
+fig, axes = plt.subplots(2,3,figsize=(10,8))
+for i, ax in enumerate(axes.flat):
+    ax.boxplot(dataset[i], positions=n, vert=False, widths=0.8)
+    ax.set_ylim(0,22)
+    ax.set_xlabel('U [m/s]')
+    ax.set_ylabel('n [m]')
+    if i == 5:
+        ax.set_title('All night')
+    else:
+        day = sun_schedule[i]['date']
+        ax.set_title(f'U(n) for {day} night')
+plt.tight_layout()
+plt.savefig(f"u_n_box.png", bbox_inches='tight', dpi=300)
+
+############################################# box u'w'
+dataset = [] # [ [0.5 2 5 10 20], [day 2], ...  ] divided by night
+for item in sun_schedule:
+    list = [] #all levels in one night
+    for i in range(5):
+        list.append( all[f'wu_cov_sn{i+1}'][ (all.index > item['sunset_utc']) & (all.index < item['sunrise_utc']) ])
+    dataset.append(list)
+
+all_u_night = [] #[0.5 2 5 10 20] for all night
+for i in range(5):
+    level_list = [] #all night, one level
+    for n_night in range(len(dataset)):
+        level_list.append(dataset[n_night][i])
+    all_u_night.append( pd.concat(level_list, axis=0).sort_index() )#df all night, one level
+dataset.append(all_u_night)
+
+fig, axes = plt.subplots(2,3,figsize=(10,8))
+for i, ax in enumerate(axes.flat):
+    ax.boxplot(dataset[i], positions=n, vert=False, widths=0.8)
+    ax.axvline(x=0, color='gray', linestyle='--')
+    ax.set_ylim(0,22)
+    ax.set_xlabel(r"$\overline{u'w'} [m^2/s^{-2}]$")
+    ax.set_ylabel('n [m]')
+    if i == 5:
+        ax.set_title('All night')
+    else:
+        day = sun_schedule[i]['date']
+        ax.set_title(f' {day} night')
+plt.tight_layout()
+plt.savefig(f"uw_box.png", bbox_inches='tight', dpi=300)
+
+############################################# box Ts'w'
+dataset = [] # [ [0.5 2 5 10 20], [day 2], ...  ] divided by night
+for item in sun_schedule:
+    list = [] #all levels in one night
+    for i in range(5):
+        list.append( all[f'wT_cov_sn{i+1}'][ (all.index > item['sunset_utc']) & (all.index < item['sunrise_utc']) ])
+    dataset.append(list)
+
+all_u_night = [] #[0.5 2 5 10 20] for all night
+for i in range(5):
+    level_list = [] #all night, one level
+    for n_night in range(len(dataset)):
+        level_list.append(dataset[n_night][i])
+    all_u_night.append( pd.concat(level_list, axis=0).sort_index() )#df all night, one level
+dataset.append(all_u_night)
+
+fig, axes = plt.subplots(2,3,figsize=(10,8))
+for i, ax in enumerate(axes.flat):
+    ax.boxplot(dataset[i], positions=n, vert=False, widths=0.8)
+    ax.axvline(x=0, color='gray', linestyle='--')
+    ax.set_ylim(0,22)
+    ax.set_xlabel(r"$\overline{T_s'w'} []$")
+    ax.set_ylabel('n [m]')
+    if i == 5:
+        ax.set_title('All night')
+    else:
+        day = sun_schedule[i]['date']
+        ax.set_title(f' {day} night')
+plt.tight_layout()
+plt.savefig(f"theta_w_box.png", bbox_inches='tight', dpi=300)
 
 #plt.show()
 
