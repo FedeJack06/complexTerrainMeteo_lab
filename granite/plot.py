@@ -8,6 +8,7 @@ import os
 from astral.sun import sun
 from astral import LocationInfo
 from zoneinfo import ZoneInfo
+import numpy as np
 
 cartella = 'Sonics/'
 
@@ -70,6 +71,120 @@ intervalli_nan = df.groupby(block_id).apply(
     })
 )
 #print(intervalli_nan)
+
+################################################## SLOW SENSOR
+cartella = 'slowSensors/' # Assicurati che il percorso sia giusto
+
+files = sorted([f for f in os.listdir(cartella) if f.startswith('es') and f.endswith('.csv')])
+
+h = [] 
+
+# Definiamo l'inizio dell'anno (modifica se l'anno non è 2012)
+start_of_year = pd.Timestamp('2012-01-01')
+
+for file in files:
+    lista = []
+
+    with open(os.path.join(cartella, file), encoding='ISO-8859-1') as f:
+        for line in f:
+            l = line.strip().split(sep=',')
+            if l:
+                lista.append(l)
+
+    # Ora anche la prima colonna (jdate) è un numero (float)
+    tipi = [float] * len(lista[0]) 
+    
+    dictionary = dict(zip(lista[0], tipi))
+    
+    df = pd.DataFrame(lista[1:], columns=lista[0])
+    df = df.astype(dictionary)
+
+    # La logica è: Data = (Inizio Anno) + (Giorni indicati in jdate - 1)
+    # Si fa "-1" perché il 1° Gennaio è il giorno 1, non il giorno 0.
+    # L'unità 'D' (Day) gestisce automaticamente la parte decimale trasformandola in ore/minuti.
+    
+    df.insert(0, 'date', start_of_year + pd.to_timedelta(df['jdate'] - 1, unit='D'))
+
+    # Arrotondamento opzionale: 
+    # La conversione da float a tempo crea spesso micro-errori (es. 05:00:00.00000001).
+    # Arrotondiamo al secondo ('S') o minuto ('min') più vicino per pulizia.
+    df['date'] = df['date'].dt.round('s')
+
+    df = df.dropna(subset=['date'])
+    df = df.sort_values(by='date', ignore_index=True)
+    df.set_index('date', inplace=True)
+
+    h.append(df)
+
+# Concatenazione verticale (axis=0)
+if h:
+    all_slow = pd.concat(h, axis=0).sort_index()
+else:
+    all_slow = pd.DataFrame()
+
+if not all_slow.empty and all_slow.index.tz is None:
+    all_slow.index = all_slow.index.tz_localize('UTC')
+
+print("Colonne:", all_slow.columns)
+if not all_slow.empty:
+    print("Start:", all_slow.index.min())
+    print("End:", all_slow.index.max())
+
+################################ temp potenziale
+# Costanti fisiche
+R_d = 287.05      # Costante dei gas per l'aria secca
+g = 9.81          # Accelerazione di gravità
+cp = 1004.0       # Calore specifico a pressione costante
+kappa = R_d / cp  # Circa 0.286 (esponente di Poisson)
+heights = [0.5, 2.0, 5.0, 10.0, 20.0]
+
+for i, h in enumerate(heights):
+    idx = i + 1
+    
+    col_T = f'T_sn{idx}'
+    T_kelvin = all_slow[col_T] + 273.15
+    
+    # P_z = P_base * exp( -g * dz / (R * T_media) )
+    # dz = h - 0.5 (differenza di quota rispetto al sensore di pressione)
+    # Approssimazione: usiamo la T locale come T media del layer (errore trascurabile su pochi metri)
+    
+    if h == 0.5:
+        # Al livello 1 la pressione è quella misurata
+        P_z = all_slow['BP_mbar']
+    else:
+        dz = h - 0.5
+        # Nota: usiamo T_kelvin locale per il calcolo della densità dell'aria a quella quota
+        P_z = all_slow['BP_mbar'] * np.exp( - (g * dz) / (R_d * T_kelvin) )
+    
+    # Salvo la pressione calcolata (opzionale, utile per debug)
+    all_slow[f'P_calc_sn{idx}'] = P_z
+
+    # 3. Calcola la Temperatura Potenziale (Theta) - Formula di Holton
+    # Theta = T * (P0 / P)^kappa
+    all_slow[f'theta_sn{idx}'] = T_kelvin * (1000.0 / P_z)**kappa
+
+#print(all_slow)
+
+################################ find nan
+df = all_slow
+righe_con_nan = df.isna().any(axis=1)
+colonne_con_nan = df.isna().any(axis=0)
+risultato = df.loc[righe_con_nan, colonne_con_nan]
+#print(risultato)
+
+dt = pd.Timedelta('5m')
+time_diff = risultato.index.to_series().diff()
+is_new_block = time_diff != dt
+block_id = is_new_block.cumsum()
+intervalli_nan = df.groupby(block_id).apply(
+    lambda x: pd.Series({
+        'Inizio': x.index[0],
+        'Fine': x.index[-1],
+        'Numero_Campioni': len(x),
+    })
+)
+#print(intervalli_nan)
+
 ################################################## Sunset Sunrise
 lat = 40.09652
 lon = -113.25861
@@ -373,6 +488,72 @@ for i, ax in enumerate(axes.flat):
         ax.set_title(f' {day} night')
 plt.tight_layout()
 plt.savefig(f"tke_box.png", bbox_inches='tight', dpi=300)
+
+############################################# theta(n) NIGHT
+theta = [] # [ [0.5 2 5 10 20], [day 2], ...  ] divided by night
+for item in sun_schedule:
+    list = [] #all levels in one night
+    for i in range(5):
+        list.append( all_slow[f'theta_sn{i+1}'][ (all_slow.index > item['sunset_utc']) & (all_slow.index < item['sunrise_utc']) ] )
+    theta.append(list)
+
+all_theta_night = [] #[0.5 2 5 10 20] for all night
+for i in range(5):
+    level_list = [] #all night, one level
+    for n_night in range(len(theta)):
+        level_list.append(theta[n_night][i])
+    all_theta_night.append( pd.concat(level_list, axis=0).sort_index() )#df all night, one level
+theta.append(all_theta_night)
+
+fig, axes = plt.subplots(2,3,figsize=(10,8))
+for i, ax in enumerate(axes.flat):
+    ax.boxplot(theta[i], positions=n, vert=False, widths=0.8, showfliers=False)
+    ax.set_ylim(0,22)
+    #ax.set_xlim(0,1)
+    ax.set_xlabel(r"$\theta [K]$")
+    ax.set_ylabel('n [m]')
+    if i == 5:
+        ax.set_title('All nighttime')
+    else:
+        day = sun_schedule[i]['date']
+        ax.set_title(f' {day} nighttime')
+plt.tight_layout()
+plt.savefig(f"theta_n_night.png", bbox_inches='tight', dpi=300)
+
+############################################# theta(n) DAY
+theta = [] # [ [0.5 2 5 10 20], [day 2], ...  ] divided by night
+for j,item in enumerate(sun_schedule):
+    list = [] #all levels in one night
+    for i in range(5):
+        if j == 4:
+            list.append( all_slow[f'theta_sn{i+1}'][ (all_slow.index > sun_schedule[j]['sunrise_utc'])] )
+        else:
+            list.append( all_slow[f'theta_sn{i+1}'][ (all_slow.index > sun_schedule[j]['sunrise_utc']) & (all_slow.index < sun_schedule[j+1]['sunset_utc']) ] )
+    theta.append(list)
+
+all_theta_night = [] #[0.5 2 5 10 20] for all night
+for i in range(5):
+    level_list = [] #all night, one level
+    for n_night in range(len(theta)):
+        level_list.append(theta[n_night][i])
+    all_theta_night.append( pd.concat(level_list, axis=0).sort_index() )#df all night, one level
+theta.append(all_theta_night)
+
+fig, axes = plt.subplots(2,3,figsize=(10,8))
+for i, ax in enumerate(axes.flat):
+    ax.boxplot(theta[i], positions=n, vert=False, widths=0.8, showfliers=False)
+    ax.set_ylim(0,22)
+    #ax.set_xlim(0,1)
+    ax.set_xlabel(r"$\theta [K]$")
+    ax.set_ylabel('n [m]')
+    if i == 5:
+        ax.set_title('All daytime')
+    else:
+        day = sun_schedule[i]['date']
+        ax.set_title(f' {day} daytime')
+plt.tight_layout()
+plt.savefig(f"theta_n_day.png", bbox_inches='tight', dpi=300)
+
 
 #plt.show()
 
