@@ -310,6 +310,37 @@ plt.tight_layout()
 plt.savefig(f"theta_u_box.png", bbox_inches='tight', dpi=300)
 
 ############################################# box TKE
+P = [] # [ [0.5 2 5 10 20], [day 2], ...  ] divided by night
+for item in sun_schedule:
+    list = [] #all levels in one night
+    for i in range(5):
+        uT = all[f'uT_cov_sn{i+1}'][ (all.index > item['sunset_utc']) & (all.index < item['sunrise_utc']) ]
+        wT = all[f'wT_cov_sn{i+1}'][ (all.index > item['sunset_utc']) & (all.index < item['sunrise_utc']) ]
+        list.append( wT*0.998 - uT*0.0627)
+    P.append(list)
+
+all_P_night = [] #[0.5 2 5 10 20] for all night
+for i in range(5):
+    level_list = [] #all night, one level
+    for n_night in range(len(P)):
+        level_list.append(P[n_night][i])
+    all_P_night.append( pd.concat(level_list, axis=0).sort_index() )#df all night, one level
+P.append(all_P_night)
+
+plt.figure(figsize=(3,4))
+ax = plt.gca()
+ax.boxplot(P[i], positions=n, vert=False, widths=0.8, showfliers=False)
+ax.axvline(x=0, color='gray', linestyle='--')
+ax.set_ylim(0,22)
+#ax.set_xlim(0,1)
+ax.set_xlabel(r"B $[Kms^{-1}]$")
+ax.set_ylabel('n [m]')
+ax.set_title('All night')
+ 
+plt.tight_layout()
+plt.savefig(f"P_box.png", bbox_inches='tight', dpi=300)
+
+############################################# box TKE
 TKE = [] # [ [0.5 2 5 10 20], [day 2], ...  ] divided by night
 for item in sun_schedule:
     list = [] #all levels in one night
@@ -317,7 +348,7 @@ for item in sun_schedule:
         u2 = all[f'sigu_cov_sn{i+1}'][ (all.index > item['sunset_utc']) & (all.index < item['sunrise_utc']) ] ** 2
         v2 = all[f'sigv_cov_sn{i+1}'][ (all.index > item['sunset_utc']) & (all.index < item['sunrise_utc']) ] ** 2
         w2 = all[f'sigw_cov_sn{i+1}'][ (all.index > item['sunset_utc']) & (all.index < item['sunrise_utc']) ] ** 2
-        list.append( u2 + v2 + w2 )
+        list.append( 0.5 * (u2 + v2 + w2) )
     TKE.append(list)
 
 all_TKE_night = [] #[0.5 2 5 10 20] for all night
